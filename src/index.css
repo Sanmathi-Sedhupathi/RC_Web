@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom font */
+@font-face {
+  font-family: 'Redseven';
+  src: url('./assets/fonts/Redseven.otf') format('opentype');
+}

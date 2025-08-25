@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -7,12 +7,57 @@ import { Textarea } from "../components/ui/textarea";
 import { ThemeToggle } from "../components/ThemeToggle";
 import About from "../assets/about.png";
 import Hero from "../assets/hero.png";
+import { motion } from "framer-motion";
 
 const navigationItems = [
   { label: "HOME", href: "#home" },
   { label: "ABOUT", href: "#about" },
   { label: "CONTACT", href: "#contact" },
 ];
+
+// Floating particles background
+// Bigger & brighter red particles
+const ParticlesBackground = () => {
+  const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  useEffect(() => {
+    const p = Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+    }));
+    setParticles(p);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute w-2 h-2 rounded-full bg-red-500"
+          style={{
+            boxShadow: "0 0 8px 4px rgba(239,68,68,0.5)", // soft red glow
+            filter: "blur(1px)", // subtle shine
+          }}
+          initial={{ x: `${p.x}vw`, y: `${p.y}vh`, opacity: 0.3, scale: 0.8 }}
+          animate={{
+            y: [`${p.y}vh`, `${(p.y + 10) % 100}vh`],
+            x: [`${p.x}vw`, `${(p.x + (Math.random() > 0.5 ? 5 : -5)) % 100}vw`],
+            opacity: [0.3, 0.8, 0.3],
+            scale: [0.8, 1.3, 0.9],
+          }}
+          transition={{
+            duration: 8 + Math.random() * 5, // slower float
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+
 
 export const Desktop = (): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,16 +67,18 @@ export const Desktop = (): JSX.Element => {
   };
 
   return (
-    <div className="bg-black dark:bg-black light:bg-white min-h-screen w-full overflow-x-hidden transition-colors duration-300">
+ <div className="relative min-h-screen w-full overflow-x-hidden transition-colors duration-300">
+      {/* background color */}
+      <div className="absolute inset-0 bg-black dark:bg-black light:bg-white -z-20" />      {/* Red particles background */}
+      <ParticlesBackground />
+
       {/* Header */}
       <header className="fixed w-full h-[70px] top-0 left-0 bg-black/90 dark:bg-black/90 light:bg-white/90 backdrop-blur-sm shadow-lg z-50 transition-colors duration-300">
         <nav className="flex w-full max-w-7xl mx-auto h-full items-center justify-between px-4 lg:px-8">
-          {/* Logo/Brand */}
-          <div className="text-white font-redseven  text-l tracking-tight hover:scale-105 transition-transform duration-300">
+          <div className="text-white font-redseven text-l tracking-tight hover:scale-105 transition-transform duration-300">
             Rider's Companion
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navigationItems.map((item, index) => (
               <a
@@ -45,7 +92,6 @@ export const Desktop = (): JSX.Element => {
             <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             <ThemeToggle />
             <Button
@@ -63,7 +109,6 @@ export const Desktop = (): JSX.Element => {
           </div>
         </nav>
 
-        {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-sm border-t border-white/10">
             <div className="flex flex-col py-4">
@@ -89,7 +134,6 @@ export const Desktop = (): JSX.Element => {
           id="home"
           className="relative min-h-screen flex flex-col items-center justify-center px-4"
         >
-          {/* Logo */}
           <div
             className="w-full max-w-[400px] mx-auto mb-8 opacity-0 animate-fade-in-up"
             style={{ animationDelay: "0.2s" }}
@@ -101,7 +145,6 @@ export const Desktop = (): JSX.Element => {
             />
           </div>
 
-          {/* Hero Text */}
           <div className="text-center max-w-3xl mx-auto space-y-6">
             <p
               className="font-display font-medium text-white text-lg md:text-xl lg:text-2xl leading-relaxed opacity-0 animate-fade-in-up tracking-wide"
@@ -121,12 +164,11 @@ export const Desktop = (): JSX.Element => {
 
         {/* About Section */}
         <section id="about" className="py-16 lg:py-24">
-          <h2 className="text-l md:text-xl lg:text-3xl font-redseven  text-white mb-16 text-center opacity-0 animate-slide-in-left tracking-tight">
+          <h2 className="text-l md:text-xl lg:text-3xl font-redseven text-white mb-16 text-center opacity-0 animate-slide-in-left tracking-tight">
             About Riders Companion
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%]  items-center">
-            {/* Image column */}
+          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] items-center">
             <div
               className="order-2 lg:order-1 opacity-0 animate-slide-in-left w-full flex justify-center"
               style={{ animationDelay: "0.3s" }}
@@ -138,7 +180,6 @@ export const Desktop = (): JSX.Element => {
               />
             </div>
 
-            {/* Text column */}
             <div className="order-1 lg:order-2 space-y-8 px-4 lg:px-0">
               <p
                 className="font-sans font-light text-white text-lg md:text-xl lg:text-2xl leading-relaxed opacity-0 animate-slide-in-right"
@@ -209,7 +250,10 @@ export const Desktop = (): JSX.Element => {
       {/* Footer */}
       <footer className="py-8 border-t border-white/10">
         <div className="text-center">
-          <p className="text-white/70 text-sm font-sans opacity-0 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <p
+            className="text-white/70 text-sm font-sans opacity-0 animate-fade-in"
+            style={{ animationDelay: "0.5s" }}
+          >
             © 2025 Riders Companion. All rights reserved.
           </p>
         </div>

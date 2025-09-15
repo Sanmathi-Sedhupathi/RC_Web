@@ -61,9 +61,45 @@ const ParticlesBackground = () => {
 
 export const Desktop = (): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState<
+    | { type: "success"; text: string }
+    | { type: "error"; text: string }
+    | null
+  >(null);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitResult(null);
+    if (!name || !email || !message) {
+      setSubmitResult({ type: "error", text: "Please fill in all fields." });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/sendMail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Failed to send");
+      setSubmitResult({ type: "success", text: data?.message || "Email sent." });
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err: any) {
+      setSubmitResult({ type: "error", text: err?.message || "Something went wrong" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -213,33 +249,52 @@ export const Desktop = (): JSX.Element => {
           <div className="w-full flex justify-center">
             <Card className="w-full max-w-5xl bg-red-700/80 rounded-xl border-0 backdrop-blur-sm opacity-0 animate-scale-in hover:scale-105 transition-transform duration-500">
               <CardContent className="p-6 lg:p-8">
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid md:grid-cols-2 gap-6">
                     <Input
                       className="h-12 bg-white rounded-lg border-0 text-gray-900 placeholder:text-gray-500 font-sans transition-all duration-300 focus:scale-105 focus:shadow-lg"
                       placeholder="Your Name"
                       type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                     />
                     <Input
                       className="h-12 bg-white rounded-lg border-0 text-gray-900 placeholder:text-gray-500 font-sans transition-all duration-300 focus:scale-105 focus:shadow-lg"
                       placeholder="Your Email"
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
 
                   <Textarea
                     className="min-h-[150px] bg-white rounded-lg border-0 resize-none text-gray-900 placeholder:text-gray-500 font-sans transition-all duration-300 focus:scale-105 focus:shadow-lg"
                     placeholder="Message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                   />
 
                   <div className="flex justify-center">
                     <Button
                       type="submit"
-                      className="w-full md:w-auto px-12 h-12 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-display font-medium text-lg transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95"
+                      disabled={isSubmitting}
+                      className="w-full md:w-auto px-12 h-12 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-display font-medium text-lg transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Send Message
+                      {isSubmitting ? "Sending..." : "Send Message"}
                     </Button>
                   </div>
+
+                  {submitResult && (
+                    <div
+                      className={
+                        submitResult.type === "success"
+                          ? "text-green-100 text-center"
+                          : "text-red-100 text-center"
+                      }
+                    >
+                      {submitResult.text}
+                    </div>
+                  )}
                 </form>
               </CardContent>
             </Card>
